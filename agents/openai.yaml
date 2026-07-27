@@ -1,0 +1,7 @@
+interface:
+  display_name: "Orchestrate Work"
+  short_description: "Route complex work across agents with explicit verification"
+  default_prompt: "Use $orchestrate-work to coordinate this task with appropriate delegation and verification."
+
+policy:
+  allow_implicit_invocation: true
