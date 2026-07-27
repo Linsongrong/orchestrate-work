@@ -2,6 +2,31 @@
 
 [中文](#中文) | [English](#english)
 
+```mermaid
+flowchart TD
+    U["用户目标 / User objective"] --> C["Xhigh 主控 / Controller<br/>意图、拆解、决策、整合"]
+    C --> G{"是否值得派工？<br/>Delegate?"}
+
+    G -->|"小型或强耦合<br/>Small or tightly coupled"| D["主控直接完成<br/>Controller executes"]
+    G -->|"独立且可验收<br/>Independent and verifiable"| P["任务合同 / Task contract<br/>范围、产物、证据、时间盒"]
+
+    P --> M["Medium 执行代理<br/>Research, implementation, diagnosis"]
+    P --> L["Low 执行代理<br/>Lookup, extraction, routine checks"]
+
+    M --> E["产物与证据<br/>Artifacts and evidence"]
+    L --> E
+    E --> V{"需要独立验收？<br/>Independent verification?"}
+
+    V -->|"是 / Yes"| R["验收代理 / Verifier<br/>检查产物与验收标准"]
+    V -->|"否 / No"| I["主控整合 / Integration"]
+    R --> Q{"通过？<br/>Accepted?"}
+    Q -->|"否 / No"| C
+    Q -->|"是 / Yes"| I
+
+    D --> O["统一交付 / Coherent outcome"]
+    I --> O
+```
+
 ## 中文
 
 `orchestrate-work` 是一个面向 Codex 的个人 Skill，用于把非简单任务组织成“主控、执行代理、独立验收”的工作流，同时避免为了并行而过度拆分任务。
