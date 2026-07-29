@@ -4,7 +4,7 @@ Use this structure when assigning a worker. Omit fields that truly do not apply,
 
 ```text
 Objective:
-Inputs and established facts:
+Relevant context and settled decisions:
 Owned scope:
 Out of scope:
 Deliverable:
@@ -29,12 +29,14 @@ Controller action needed:
 
 - Solve only the assigned objective.
 - Read only the context needed for the owned scope.
+- Treat the task contract as authoritative; do not reconstruct or request the full parent conversation unless a specific missing fact blocks progress.
 - Preserve user changes and avoid unrelated edits.
 - Do not create additional agents unless the contract authorizes further decomposition.
 - Verify the result before returning it.
 - Stop when the contract's completion gate is met; do not broaden investigation to improve completeness cosmetically.
 - At the time limit, return the best evidence collected and mark remaining gaps instead of continuing silently.
 - Report uncertainty and failed checks directly; do not hide them behind a completion claim.
+- Return compact evidence and artifact locations instead of raw logs or a chronological transcript.
 
 ## Verifier Contract
 
