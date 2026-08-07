@@ -1,65 +1,61 @@
 # Routing Policy
 
-## Sol Routing
+Use this policy in orchestration mode for role, model, parallelism, ownership, recovery, and escalation decisions.
 
-| Task shape | Owner | Model and effort | Delegation |
-| --- | --- | --- | --- |
-| Localized action or tightly coupled reasoning | Controller | `gpt-5.6-sol`, current controller effort | None |
-| Deterministic lookup, extraction, formatting, or routine test | Worker | `gpt-5.6-sol`, low | Only when it isolates meaningful context or joins a larger delegated scope |
-| Bounded implementation, diagnosis, research, or synthesis | Worker | `gpt-5.6-sol`, medium | One worker per cohesive independent scope |
-| Ordinary independent verification | Worker | `gpt-5.6-sol`, medium | Only after a material artifact exists |
-| Ambiguous objective, architecture, cross-scope tradeoff, or final acceptance | Controller | `gpt-5.6-sol`, high or xhigh | Delegate evidence gathering only |
+## Route Roles And Models
 
-Treat the user's current controller selection as authoritative because a skill cannot change the already-running controller. For every worker override, set `fork_turns="none"` and include the necessary task-local context in the assignment. Do not inherit the full controller conversation merely for convenience. If the current `spawn_agent` interface lacks `model` or `reasoning_effort`, use the available runtime default and report the limitation when it is material.
+| Work shape | Role | Preferred model and effort |
+| --- | --- | --- |
+| Deterministic lookup, extraction, formatting, or routine checks | Scout or verifier | `gpt-5.6-luna`, task-appropriate effort |
+| Routine bounded implementation, tests, docs, or ordinary diagnosis | Executor or integrator | `gpt-5.6-terra`, task-appropriate effort |
+| Complex implementation, research, diagnosis, conflict analysis, or important independent verification | Any matching specialist role | `gpt-5.6-sol`, task-appropriate effort |
+| Intent, decomposition, consequential decisions, conflict resolution, and final acceptance | Controller | Current controller; prefer high-reasoning capability |
 
-## Delegation Gate
+Prefer the stronger model when routing is uncertain. If model or reasoning overrides are unavailable, use the runtime fallback and record any material confidence impact.
 
-Delegate only when all four checks pass:
+- **Scout:** Produce bounded discovery or evidence. A scout may later execute only under a new executor contract.
+- **Executor:** Produce or repair artifacts and run relevant local checks. An executor may repair its own rejected work.
+- **Integrator:** Own substantive merging, cross-component adjustments, and integration checks. Treat integration as execution, not controller glue.
+- **Verifier:** Independently judge artifacts and report findings. Never modify or fix the artifact being verified.
 
-1. **Boundary:** the assignment is one cohesive unit with disjoint file or external-state ownership.
-2. **Verifiability:** the result can be accepted from artifacts, checks, or concrete evidence.
-3. **Autonomy:** the worker does not need recurring architectural or product decisions.
-4. **Payoff:** the worker isolates substantial execution/context, reduces the critical path, or provides meaningful independent verification.
+An executor or integrator must never verify its own artifact. Use a distinct verifier for important artifacts. Avoid a separate verifier only for low-risk work that is completely established by necessary mechanical checks; final integrated verification remains mandatory.
 
-Keep work local when it fits in three short tool calls without substantial output, when the task contract would be almost as long as the work, or when reviewing the result would require repeating the worker's investigation.
+## Dispatch In Dependency Waves
 
-## Parallelism Gate
+1. Identify ready workstreams from the ledger.
+2. Dispatch all ready work that is independent, disjoint, and useful within capacity. Commonly run two executors and preserve room for a verifier.
+3. Do not serialize independent work by default, force parallelism onto dependent work, or fill slots with speculative research.
+4. End the wave at its completion gates, update the ledger, resolve rejected or conflicting results, then dispatch the next ready wave.
 
-Start with one worker. Consider parallelism only after the delegation gate passes for each proposed workstream.
+Default to one layer of direct child agents. Set `fork_turns` to `"none"` and provide only task-local context. A perceived need for most of the conversation signals poor decomposition; refine the contract instead. Child agents may not spawn other agents.
 
-Run workstreams concurrently only when all of these are true:
+## Own State Explicitly
 
-1. Neither needs the other's intermediate result.
-2. Their file and external-state ownership does not overlap.
-3. Each result can be checked independently.
-4. Parallel execution saves meaningful wall-clock time.
+Assign exclusive ownership of every file, directory, artifact, and external mutation. If ownership overlaps, serialize the work or appoint one owner.
 
-Otherwise, order the work as sequential gates.
+Use a shared worktree only when changes are truly disjoint and relevant checks cannot observe a partially modified repository. Otherwise use isolated worktrees and assign an integrator to combine accepted results. Apply the same rule to external systems: concurrent agents must not mutate overlapping state.
 
-Add a second execution worker only when parallel execution saves meaningful time. More than two execution workers is exceptional and requires a clear dependency graph. Reserve capacity for required verification or schedule it after execution. Do not consume every slot with open-ended research.
+Agents edit or produce their owned artifacts directly and run checks appropriate to them. Keep raw logs and bulky exploration in the worker context; return compact evidence and artifact locations unless failure or conflict requires controller inspection.
 
-## Escalation Rules
+## Monitor By Progress
 
-Return control to the controller when any of these occurs:
+Give each task a measurable completion gate and a soft timeout appropriate to expected work and tool latency. Do not use fixed universal minute limits.
 
-- a worker discovers that an assumption changes the objective;
-- evidence conflicts across workers;
-- a task needs access or authority outside its contract;
-- the same approach fails twice;
-- expected scope expands materially;
-- verification cannot establish correctness;
-- an action is destructive, externally consequential, or difficult to reverse.
+At a soft timeout, request one compact progress report. Continue a worker that shows healthy, in-scope progress. Interrupt only when it is stalled, repeats a failed approach, leaves scope, or blocks the critical path without useful progress.
 
-The controller may revise the plan, take the task back at high or xhigh effort, or ask the user for the specific missing decision. Do not make a worker silently increase its own scope or reasoning role.
+## Recover And Stop
 
-## Budget Rules
+- First verification failure: return findings to the original executor for repair.
+- Second failure: reassess assumptions, contract, model, agent, or approach before redispatch.
+- Continued failure: stop that route. Try another in-scope route when available; otherwise report a concrete blocker or request the needed user decision.
+- Worker loss or tool failure: preserve accepted artifacts and ledger state, then redispatch or use another in-scope route.
+- Conflicting evidence: keep disputed output unaccepted until the controller resolves it or commissions targeted evidence.
+- Scope discovery: admit only acceptance-critical, blocking, or assumption-disproving work. Backlog optional work and ask the user about material scope change.
 
-- Count specification, coordination, and review as part of delegation cost.
-- Do not spawn a worker for work the controller can complete and verify in one short tool sequence.
-- Count avoided controller context as a real benefit, but require enough benefit to outweigh writing and reviewing the task contract.
-- Prefer fewer well-bounded workers over many narrow workers with high coordination overhead.
-- Do not use available concurrency as a target.
-- Stop expanding the agent tree once additional work no longer changes the decision or deliverable.
-- Give every worker a time budget or measurable completion gate. Scale it to the task rather than using one universal duration.
-- Default to 1-2 minutes for deterministic inspection or extraction, 2-5 minutes for bounded review or research, and 5-15 minutes for bounded implementation and checks. Use a longer window only when a known tool runtime or task property requires it.
-- At expiry, ask once for a compact evidence return. Interrupt a worker that continues beyond the collection window, then finish with the evidence available and state the gap.
+Do not let the controller casually repair failed delegated work. An emergency takeover is allowed only when it is recorded in the ledger and independently verified.
+
+## Escalate To User-Owned Tasks
+
+Use direct child agents by default. Suggest a new user-owned Codex task only for work that is long-lived and independently steerable or needs strong worktree isolation. Creating or handing off such a task requires explicit user authorization; do not substitute it for ordinary child-agent orchestration.
+
+When the user changes the objective, perform impact analysis, interrupt only affected branches, revise the ledger and contracts, and do not integrate results produced against stale requirements.

@@ -1,7 +1,7 @@
 interface:
   display_name: "Orchestrate Work"
-  short_description: "Protect long-task context with bounded Sol workers"
-  default_prompt: "Use $orchestrate-work to coordinate this task with restrained delegation and proportional verification."
+  short_description: "Controller-first orchestration for complex work"
+  default_prompt: "Use $orchestrate-work to coordinate this task through bounded agents, durable task state, and independent verification."
 
 policy:
   allow_implicit_invocation: true
