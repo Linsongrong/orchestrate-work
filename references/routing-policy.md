@@ -2,6 +2,20 @@
 
 Use this policy in orchestration mode for role, model, parallelism, ownership, recovery, and escalation decisions.
 
+## Set Assurance And Side-Effect Controls
+
+Set one assurance profile for every phase and record it in the ledger before dispatching work.
+
+| Profile | Required evidence | Avoid |
+| --- | --- | --- |
+| `prototype` | One independent Gate for each major implementation, one focused end-to-end check, and concise raw evidence for the path under test | Re-gating status-only integration, full-history revalidation, and low-value sidecars |
+| `formal` | Every `prototype` safeguard plus proportional independent verification of important artifacts and final integrated verification | Reducing critical safety, authority, or external-effect checks for speed |
+| `release` | Every `formal` requirement plus reproducible environment evidence, external dependency review, and release-readiness checks | Treating an unverified environment or external dependency as release-ready |
+
+Default to `formal`. Use `prototype` only when the user explicitly requests a rapid prototype. Use `release` only when the user explicitly requests release-level assurance. Keep a profile fixed within a phase. You may raise it mid-phase; lower it only with explicit user authorization, and apply the lower profile only to work that has not started.
+
+Treat paid model calls, real-world or production runs, remote writes, irreversible actions, and secret persistence as budgeted side effects. Before dispatch, record the resource, limit, consumed count, renewal authority, and safe handling rule. Default their budget to zero when the user has not authorized a limit. Read-only, low-cost inspection does not need a numeric budget. Workers must declare consumption before performing a budgeted action and return control when the limit is exhausted; they may not silently retry. Keep secrets in approved ephemeral environment channels unless the user explicitly authorizes another mechanism.
+
 ## Route Roles And Models
 
 | Work shape | Role | Preferred model and effort |
@@ -29,13 +43,17 @@ An executor or integrator must never verify its own artifact. Use a distinct ver
 
 Default to one layer of direct child agents. Set `fork_turns` to `"none"` and provide only task-local context. A perceived need for most of the conversation signals poor decomposition; refine the contract instead. Child agents may not spawn other agents.
 
+A delegated child is in worker mode. It may use ordinary specialist skills required by its contract, but must not invoke `orchestrate-work`, create agents or tasks, or take over controller responsibilities. Return a concrete escalation when the contract needs further decomposition.
+
 ## Own State Explicitly
 
-Assign exclusive ownership of every file, directory, artifact, and external mutation. If ownership overlaps, serialize the work or appoint one owner.
+Assign exclusive ownership of every file, directory, artifact, and external mutation. If ownership overlaps, serialize the work or appoint one owner. When concurrent writers share a worktree, maintain a ledger ownership map with each path or resource, its writer, allowed mutation, freeze state, and dependent verifier or integrator.
 
 Use a shared worktree only when changes are truly disjoint and relevant checks cannot observe a partially modified repository. Otherwise use isolated worktrees and assign an integrator to combine accepted results. Apply the same rule to external systems: concurrent agents must not mutate overlapping state.
 
-Agents edit or produce their owned artifacts directly and run checks appropriate to them. Keep raw logs and bulky exploration in the worker context; return compact evidence and artifact locations unless failure or conflict requires controller inspection.
+Agents edit or produce their owned artifacts directly and run checks appropriate to them. Freeze a functional candidate's paths when it enters independent verification; verifiers remain read-only, and integrators may modify only their assigned integration paths. Keep raw logs and bulky exploration in the worker context; return compact evidence and artifact locations unless failure or conflict requires controller inspection.
+
+Treat functional candidates, verification verdicts, and ledger integration as distinct logical objects. The executor owns the candidate; the verifier produces an immutable verdict without changing it; the controller records status without changing the verdict. Make separate commits only when repository policy or isolation needs them. For repair, state the functional base and excluded historical verification artifacts in the contract.
 
 ## Monitor By Progress
 
@@ -53,6 +71,10 @@ At a soft timeout, request one compact progress report. Continue a worker that s
 - Scope discovery: admit only acceptance-critical, blocking, or assumption-disproving work. Backlog optional work and ask the user about material scope change.
 
 Do not let the controller casually repair failed delegated work. An emergency takeover is allowed only when it is recorded in the ledger and independently verified.
+
+## Freeze And Advance Phases
+
+After a phase is accepted, update the ledger with its completed deliverables, explicit non-goals, latest Gate verdict, next objective, assurance profile, and remaining or newly granted authority. Start the next phase automatically only when it was already in the authorized plan. Otherwise ask the user for the new objective or authority. An accepted Gate that has not yet reached the ledger is `pending integration`, not phase completion.
 
 ## Escalate To User-Owned Tasks
 
