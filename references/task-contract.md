@@ -1,46 +1,65 @@
 # Task Contract
 
-Give every child agent one bounded contract. Model and reasoning fields are mandatory; other fields may be omitted only when genuinely irrelevant.
+Give every child agent one bounded contract. Keep it task-local and omit conditional fields that do not apply. Do not turn the template into a checklist that expands the worker's scope. Prefer one short clause per field and reference ledger keys or artifact paths instead of restating their contents.
+
+Start every child dispatch message with this exact preamble. Copy it into the message itself; never replace it with a ledger reference or assume the child inherits it:
 
 ```text
 Execution mode: worker
-Delegation depth: 1
+Remaining delegation depth: 0
+Agent spawning or task creation: prohibited
+orchestrate-work invocation: prohibited
+```
+
+## Core Contract
+
+The four-line preamble, role/profile, explicit model route, objective, ownership, deliverable, acceptance, check ownership, authority, completion, and escalation fields are always required. Write `none` instead of adding explanatory boilerplate when no authority or budget applies.
+
+```text
+Execution mode: worker
+Remaining delegation depth: 0
+Agent spawning or task creation: prohibited
+orchestrate-work invocation: prohibited
 Role: scout | executor | integrator | verifier
-Phase:
-Assurance profile: prototype | formal | release
-Selected model: required; name the intended runtime model, including an intentional same-as-controller choice
-Reasoning effort: required; low | medium | high | xhigh | max
-Routing rationale: required; why this model and effort fit the work and risk
-Runtime fallback: required; write `none` when unused, otherwise requested route, actual route, fallback reason, and confidence impact
+Phase and assurance profile: prototype | formal | release
+Model, reasoning effort, and brief routing rationale:
 Objective:
-Relevant context and settled decisions:
-Dependencies and inputs:
-Owned files, directories, artifacts, or external state:
-Execution environment or worktree:
-Shared-worktree ownership map or reference: required for concurrent writers
-Functional base and excluded historical artifacts: required for repairs or re-verification
-Side-effect budget and handling rule: resource, limit, consumed, renewal authority
+Relevant context or ledger reference:
+Owned scope:
 Out of scope:
 Deliverable:
 Acceptance criteria:
-Required evidence and checks:
-Checks owned by this role:
-Checks already satisfied and must not be rerun:
-Final integrated verification: for a final verifier, identify the integrated candidate and assigned check; otherwise `not assigned`
+Required evidence and check ownership:
+Authority and side-effect budget: write `none` when no budgeted action is allowed or needed
 Completion gate:
-Soft timeout and progress signal:
 Escalate when:
-Agent spawning: prohibited
-Orchestration skill: prohibited
 ```
+
+## Conditional Fields
+
+Add only when applicable:
+
+```text
+Prototype experiment: hypothesis, minimum experiment, decision threshold, nonblocking backlog, Gate/repair budget
+Dependencies and inputs: when they are not obvious from relevant context
+Execution environment or worktree: when location affects execution or evidence
+Runtime fallback: when the requested route is unavailable at dispatch
+Shared-worktree ownership map or reference: for concurrent writers
+Functional base and excluded historical artifacts: for repair or re-verification
+Checks already satisfied and must not be rerun: when reusing evidence
+Final verification assignment: for a final verifier or a prototype verifier owning both the focused Gate and final check
+Soft timeout and progress signal: for work requiring active monitoring
+```
+
+For a prototype executor, put all tightly coupled design, adapters, mocks, implementation, and targeted author checks needed by the minimum experiment into one contract. Reference the ledger experiment instead of copying its full hypothesis and backlog into the contract. Do not create verifier contracts for intermediate artifacts. Contract one decision verifier after that candidate is complete.
 
 Require this compact return exactly:
 
 ```text
 Status: complete | partial | blocked
 Result or artifact locations:
-Evidence and checks:
-Candidate identity or digest and evidence receipts: candidate, command, environment, result, owner
+Artifact handoff receipt: absolute path, type, size, readability, digest or n/a; observed immediately before return; write `none` when no artifact was assigned
+Evidence and checks: include candidate, command, environment, result, and owner when evidence may be reused
 Requested and actual model/effort, including fallback if used:
 Material decisions or findings:
 Unresolved risks:
@@ -52,11 +71,13 @@ Keep raw transcripts, logs, and large evidence collections outside the return un
 ## Common Rules
 
 - Treat the contract as authoritative and solve only its objective.
+- Do not spawn an agent, create or fork a task, ask another agent to continue the work, or invoke `orchestrate-work`. If the objective needs decomposition, stop and return the specific decomposition need to the controller.
 - Use the explicitly contracted model and reasoning effort. Do not silently inherit a route; report any runtime fallback with its reason and confidence impact.
 - Use only task-local context; request a specific missing fact instead of the parent conversation.
-- Do not invoke `orchestrate-work`, spawn agents, create tasks, expand scope, or mutate unowned state. You may use ordinary specialist skills needed to complete the contract.
+- Do not expand scope or mutate unowned state. You may use ordinary non-orchestration specialist skills needed to complete the contract.
 - Preserve existing user changes and avoid unrelated edits.
 - Produce artifacts directly when assigned ownership.
+- Immediately before returning, confirm each declared artifact exists and is readable and report its absolute path, type, size, and digest when applicable. Do not claim a missing or mismatched artifact is complete.
 - Before a budgeted side effect, report the intended consumption and verify remaining budget. Stop and escalate when it is exhausted; do not retry without renewed authorization.
 - Stop at the completion gate, not at an arbitrary elapsed-time cutoff.
 - At a soft timeout, return compact progress when asked and continue if progress is healthy.
@@ -98,7 +119,7 @@ Objective: Determine whether the supplied artifacts satisfy every acceptance cri
 Artifacts and evidence:
 Acceptance criteria:
 Checks to run:
-Checks already satisfied and must not be rerun:
+Checks already satisfied and must not be rerun: omit when none
 Independent reproduction required: yes | no; reason
 Final integrated verification: yes | no; identify the integrated candidate when yes
 Out of scope: Modifying, repairing, or reimplementing the artifacts.

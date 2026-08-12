@@ -1,7 +1,7 @@
 interface:
   display_name: "Orchestrate Work"
-  short_description: "Profiled controller-first orchestration"
-  default_prompt: "Use $orchestrate-work to coordinate this task with formal assurance, bounded agents, and independent verification."
+  short_description: "Hypothesis-first profiled orchestration"
+  default_prompt: "Use $orchestrate-work to coordinate this task with the assurance profile I request, bounded agents, and proportional independent verification."
 
 policy:
   allow_implicit_invocation: true
