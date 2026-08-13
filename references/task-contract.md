@@ -78,7 +78,7 @@ Keep raw transcripts, logs, and large evidence collections outside the return un
 - Preserve existing user changes and avoid unrelated edits.
 - Produce artifacts directly when assigned ownership.
 - Immediately before returning, confirm each declared artifact exists and is readable and report its absolute path, type, size, and digest when applicable. Do not claim a missing or mismatched artifact is complete.
-- Before a budgeted side effect, report the intended consumption and verify remaining budget. Stop and escalate when it is exhausted; do not retry without renewed authorization.
+- Before a budgeted side effect, report the intended consumption and verify remaining budget. Exhaustion blocks only that named side effect and its retries; continue otherwise-ready work that consumes none of it, but stop and escalate immediately before consuming it without renewed authorization.
 - Stop at the completion gate, not at an arbitrary elapsed-time cutoff.
 - At a soft timeout, return compact progress when asked and continue if progress is healthy.
 - Report failed checks, uncertainty, scope pressure, and blockers without hiding them behind `complete`.
