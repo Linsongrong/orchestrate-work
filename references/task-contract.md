@@ -13,7 +13,22 @@ orchestrate-work invocation: prohibited
 
 ## Core Contract
 
-The four-line preamble, role/profile, explicit model route, objective, ownership, deliverable, acceptance, check ownership, authority, completion, and escalation fields are always required. Write `none` instead of adding explanatory boilerplate when no authority or budget applies.
+The four-line preamble, fixed dispatch preflight, role/profile, explicit model route, objective, ownership, deliverable, acceptance, check ownership, authority, completion, and escalation fields are always required. Treat both `spawn_agent` and `followup_task` as dispatches; missing preflight fields block dispatch. Write `none` instead of adding explanatory boilerplate when no authority or budget applies.
+
+Before the dispatch message, record this fixed preflight in the controller ledger:
+
+```text
+Role:
+Task shape:
+Current model/effort: model/effort | none for new agent
+Recommended model/effort:
+Ownership:
+Acceptance gate:
+Side-effect budget:
+Reuse/new-agent decision and rationale:
+```
+
+For fresh creation, use the name `<role>_<work>_<model>_<effort>` with valid lowercase underscore tokens, such as `executor_api_terra_medium`. This is only an observability hint for the requested creation route, not actual-route evidence; followup reuse keeps the existing name. Model and effort are sticky after creation; `followup_task` cannot reroute a reused agent. Reuse is allowed only when the current model and effort match the recommended route and its rationale is recorded. A mismatch requires a fresh agent; if the recommended route is unavailable, select and record an explicit fallback on that fresh agent. For a new agent, record only the requested route until creation confirms an actual route; after either dispatch, record requested and actual route where known and any fallback.
 
 ```text
 Execution mode: worker
