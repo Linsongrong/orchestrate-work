@@ -22,13 +22,19 @@ Role:
 Task shape:
 Current model/effort: model/effort | none for new agent
 Recommended model/effort:
+Why the next lower model is insufficient:
+Why the next lower effort is insufficient:
+Task-shape change since current route: none | describe
+High-tier budget and renewal decision: n/a | describe
+Mandatory downgrade decision: n/a | describe
+Context-transfer/cache-aware reuse decision:
 Ownership:
 Acceptance gate:
 Side-effect budget:
 Reuse/new-agent decision and rationale:
 ```
 
-For fresh creation, use the name `<role>_<work>_<model>_<effort>` with valid lowercase underscore tokens, such as `executor_api_terra_medium`. This is only an observability hint for the requested creation route, not actual-route evidence; followup reuse keeps the existing name. Model and effort are sticky after creation; `followup_task` cannot reroute a reused agent. Reuse is allowed only when the current model and effort match the recommended route and its rationale is recorded. A mismatch requires a fresh agent; if the recommended route is unavailable, select and record an explicit fallback on that fresh agent. For a new agent, record only the requested route until creation confirms an actual route; after either dispatch, record requested and actual route where known and any fallback.
+`Recommended model/effort` is the lowest sufficient complete route for the current task shape. Write `n/a` for `Why the next lower model is insufficient` when the selected model is Luna; otherwise state the concrete lower-model insufficiency. Write `n/a` for `Why the next lower effort is insufficient` when the selected effort is `medium`; otherwise state why `medium` is insufficient. Never use only "complex", "important", or "high-risk" as either reason. For fresh creation, use the name `<role>_<work>_<model>_<effort>` with valid lowercase underscore tokens, such as `executor_api_terra_medium`. This is only an observability hint for the requested creation route, not actual-route evidence; followup reuse keeps the existing name. Model and effort are sticky after creation; `followup_task` cannot reroute a reused agent. Reevaluate the task shape before followup: reuse only when the current route matches the new recommended route and related work is worth batching; a mismatch requires a fresh agent. The cache decision may preserve a genuinely same-task, same-route agent, but must not assume cross-agent or cross-model cache hits or bypass a distinct verifier. If the recommended route is unavailable, select and record an explicit fallback on that fresh agent. For a new agent, record only the requested route until creation confirms an actual route; after either dispatch, record requested and actual route where known and any fallback.
 
 ```text
 Execution mode: worker
@@ -37,7 +43,7 @@ Agent spawning or task creation: prohibited
 orchestrate-work invocation: prohibited
 Role: scout | executor | integrator | verifier
 Phase and assurance profile: prototype | formal | release
-Model, reasoning effort, and brief routing rationale:
+Model, reasoning effort, and brief routing rationale: lowest sufficient route and concrete lower-route insufficiency when applicable
 Objective:
 Relevant context or ledger reference:
 Owned scope:
