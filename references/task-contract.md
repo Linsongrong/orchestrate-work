@@ -96,6 +96,7 @@ Keep raw transcripts, logs, and large evidence collections outside the return un
 - Use the explicitly contracted model and reasoning effort. Do not silently inherit a route; report any runtime fallback with its reason and confidence impact.
 - Use only task-local context; request a specific missing fact instead of the parent conversation.
 - Do not expand scope or mutate unowned state. You may use ordinary non-orchestration specialist skills needed to complete the contract.
+- Implement only what the current acceptance criteria and profile risk floor require; backlog speculative completeness unless it materially affects scope, cost, or acceptance. Do not add unrequested abstractions, files, dependencies, configuration, compatibility layers, or tests without a present need.
 - Preserve existing user changes and avoid unrelated edits.
 - Produce artifacts directly when assigned ownership.
 - Immediately before returning, confirm each declared artifact exists and is readable and report its absolute path, type, size, and digest when applicable. Do not claim a missing or mismatched artifact is complete.
@@ -114,6 +115,7 @@ Keep raw transcripts, logs, and large evidence collections outside the return un
 ### Executor
 
 - Implement within exclusive ownership and run the targeted author checks assigned in the contract.
+- Understand the relevant caller and execution flow first. Reuse repository code, then the standard library, native platform, or installed dependencies before writing minimum new code. For a bug, prefer one shared root-cause repair over symptom patches when the flow supports it.
 - Repair own work when the controller returns independent verification findings.
 - Treat a submitted candidate as frozen while independent verification runs. For a repair, use the stated functional base and do not absorb historical verifier artifacts into the candidate.
 - Do not issue the acceptance verdict for own artifacts.
@@ -127,6 +129,7 @@ Keep raw transcripts, logs, and large evidence collections outside the return un
 ### Verifier
 
 - Inspect the artifact independently against the supplied criteria and raw evidence. First identify the authoritative source of rules and evidence; challenge self-authenticating or co-mutable candidate/proof loops when relevant.
+- Confirm that the candidate did not minimize away explicit requirements, trust-boundary validation, security, data-loss prevention, accessibility basics, physical calibration where relevant, conclusion validity, replayability, authority, or side-effect safety. Treat each required check as evidence for a concrete failure mode; do not add a duplicate Gate for ceremony.
 - Report findings ordered by severity, passed checks, residual risk, and an explicit accept or reject verdict.
 - Do not edit, repair, or reimplement the artifact. Send failures to the controller.
 - Treat the verdict as an immutable verification artifact. Status-only and explicitly non-normative documentation artifacts may be out of scope when the contract says so; rules, prompts, schemas, policies, and other behavior-defining text require appropriate verification.

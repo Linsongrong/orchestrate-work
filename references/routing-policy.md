@@ -28,6 +28,16 @@ In `formal` and `release`, a specifically contracted verifier must run the final
 
 Treat paid model calls, real-world or production runs, remote writes, irreversible actions, and secret persistence as budgeted side effects. Before dispatch, record the resource, limit, consumed count, renewal authority, and safe handling rule. Default their budget to zero when the user has not authorized a limit. Read-only, low-cost inspection does not need a numeric budget. Exhausting a resource blocks only its side effect and retries: workers may complete otherwise-ready zero-consumption work, but must return control immediately before consuming the exhausted resource. They may not silently retry. Keep secrets in approved ephemeral environment channels unless the user explicitly authorizes another mechanism.
 
+## Keep Implementation Minimum Sufficient
+
+After understanding the real caller and execution flow, implement only what the current acceptance criteria and profile risk floor require. Prefer, in order: reuse the repository's implementation, the standard library, the native platform, an already installed dependency, then the minimum new code. Do not add abstractions, files, dependencies, configuration, compatibility layers, or tests without a present need. Put nonblocking simplifications in the backlog unless they materially affect scope, cost, or acceptance.
+
+For a bug fix, trace the relevant callers and flow before editing. Prefer one shared root-cause repair over symptom patches, unless the flow shows the symptoms have distinct causes.
+
+Minimum sufficient work never removes explicit requirements, trust-boundary validation, security, data-loss prevention, accessibility basics, physical calibration where relevant, conclusion validity, replayability, authority, or side-effect safety. Keep those obligations in the profile risk floor.
+
+Every added check must name a concrete failure mode and contribute unique decision evidence. Do not duplicate checks or Gates for ceremony; include this review in the existing applicable Gate. Preserve the profile boundary: `prototype` uses the smallest decision-relevant runnable check plus its risk floor, `formal` uses proportional regression, and `release` retains release-readiness checks.
+
 ## Route Roles And Models
 
 | Work shape | Role | Default model and effort |
@@ -66,7 +76,7 @@ Assign each required check to one primary owner before dispatch:
 - **Specifically contracted final verifier:** the final check required by the assurance profile; in a qualifying single-candidate prototype, the same verifier contract may own the focused decision Gate and final check.
 - **Controller:** judge evidence, resolve conflicts, and accept or reject; do not rerun an owned check merely to observe it.
 
-Do not duplicate an identical check across roles merely for ceremony. A verifier must use an orthogonal method, an independent environment, or a risk-based check when repetition is required. On the verifier's first pass, identify the authoritative source of rules and evidence. Challenge self-authenticating or co-mutable candidate/proof loops when relevant; do not accept a candidate solely because it supplies mutable proof of its own compliance.
+Do not duplicate an identical check across roles merely for ceremony. Each check must name a concrete failure mode and add unique decision evidence. A verifier must use an orthogonal method, an independent environment, or a risk-based check when repetition is required. On the verifier's first pass, identify the authoritative source of rules and evidence. Challenge self-authenticating or co-mutable candidate/proof loops when relevant; do not accept a candidate solely because it supplies mutable proof of its own compliance.
 
 Record evidence as a receipt keyed by candidate identity or digest, command, environment, result, and owner. Reuse it only while all five remain applicable and the source is trusted. Rerun only after a candidate or environment change, missing or untrusted evidence, or when independent reproduction is an explicit acceptance need. Contracts must state checks owned, checks already satisfied, and checks that must not be rerun.
 
