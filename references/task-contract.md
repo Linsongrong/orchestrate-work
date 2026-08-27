@@ -34,7 +34,7 @@ Side-effect budget:
 Reuse/new-agent decision and rationale:
 ```
 
-`Recommended model/effort` is the lowest sufficient complete route for the current task shape. Write `n/a` for `Why the next lower model is insufficient` when the selected model is Luna; otherwise state the concrete lower-model insufficiency. Write `n/a` for `Why the next lower effort is insufficient` when the selected effort is `medium`; otherwise state why `medium` is insufficient. Never use only "complex", "important", or "high-risk" as either reason. For fresh creation, use the name `<role>_<work>_<model>_<effort>` with valid lowercase underscore tokens, such as `executor_api_terra_medium`. This is only an observability hint for the requested creation route, not actual-route evidence; followup reuse keeps the existing name. Model and effort are sticky after creation; `followup_task` cannot reroute a reused agent. Reevaluate the task shape before followup: reuse only when the current route matches the new recommended route and related work is worth batching; a mismatch requires a fresh agent. The cache decision may preserve a genuinely same-task, same-route agent, but must not assume cross-agent or cross-model cache hits or bypass a distinct verifier. If the recommended route is unavailable, select and record an explicit fallback on that fresh agent. For a new agent, record only the requested route until creation confirms an actual route; after either dispatch, record requested and actual route where known and any fallback.
+`Recommended model/effort` is the lowest sufficient complete route for the current task shape. Write `n/a` for `Why the next lower model is insufficient` when the selected model is Luna; otherwise state the concrete lower-model insufficiency. Write `n/a` for `Why the next lower effort is insufficient` when the selected effort is `medium`; otherwise state why `medium` is insufficient. Never use only "complex", "important", or "high-risk" as either reason. For fresh creation, use the name `<role>_<work>_<model>_<effort>` with valid lowercase underscore tokens, such as `executor_api_terra_medium`. This is only an observability hint for the requested creation route, not actual-route evidence; followup reuse keeps the existing name. Model and effort are sticky after creation; `followup_task` cannot reroute a reused agent. Reevaluate the task shape before followup and explicitly record the current task shape, recommended route, and reuse or mandatory-downgrade decision. Reuse only when the current route exactly matches the recommendation and related work is worth batching; a mismatch requires a fresh lower or otherwise suitable agent. Same-executor continuity never overrides a mandatory downgrade, including retaining Sol for Terra/Luna-shaped work. The cache decision may preserve a genuinely same-task, same-route agent, but must not assume cross-agent or cross-model cache hits or bypass a distinct verifier. If the recommended route is unavailable, select and record an explicit fallback on that fresh agent. For a new agent, record only the requested route until creation confirms an actual route; after either dispatch, record requested and actual route where known and any fallback.
 
 ```text
 Execution mode: worker
@@ -70,9 +70,12 @@ Functional base and excluded historical artifacts: for repair or re-verification
 Checks already satisfied and must not be rerun: when reusing evidence
 Final verification assignment: for a final verifier or a prototype verifier owning both the focused Gate and final check
 Soft timeout and progress signal: for work requiring active monitoring
+Mutable remote-state receipt: observed state/time, identity or revision when available, freshness bound, and reread trigger; only for state that may change before dependent mutation or acceptance
 ```
 
 For a prototype executor, put all tightly coupled design, adapters, mocks, implementation, and targeted author checks needed by the minimum experiment into one contract. Reference the ledger experiment instead of copying its full hypothesis and backlog into the contract. Do not create verifier contracts for intermediate artifacts. Contract one decision verifier after that candidate is complete.
+
+Use a compact delta followup only when the same role, functional workstream/candidate lineage, ownership, authority, budget, and exact recommended route remain. It must repeat the non-delegation preamble and explicitly state the objective delta, new findings, completion gate, current task shape, recommended route, reuse decision, functional base, and current or superseded candidate identity/digest; unchanged fields may reference the prior contract. Record the resulting identity/digest before reusing evidence or dispatching verification, so evidence for the superseded digest cannot transfer. Any material change requires a full contract, and a route mismatch requires a fresh suitable agent.
 
 Require this compact return exactly:
 
@@ -89,6 +92,8 @@ Controller action needed:
 
 Keep raw transcripts, logs, and large evidence collections outside the return unless the controller needs them to resolve a failure or conflict.
 
+Use `complete` only when the assigned completion gate is met. Use `partial` only for a controller-requested checkpoint, or a reusable subset that cannot progress because of external dependency/state, authority or budget, or a genuine decomposition or user decision; state the completed reusable result, remaining work, reason, whether ownership is retained or released, and next owner/action. Use `blocked` only when no safe in-scope progress remains without external change or user authority. Routine recoverable command, tool-path, JSON/reference, transient restart/socket/readiness, and healthy observation-timeout faults remain executor responsibility within side-effect, retry, and convergence limits; they do not justify `partial`. Stop retrying on exhausted budget, no new evidence, or nonconvergence under the existing recovery rules.
+
 ## Common Rules
 
 - Treat the contract as authoritative and solve only its objective.
@@ -96,7 +101,7 @@ Keep raw transcripts, logs, and large evidence collections outside the return un
 - Use the explicitly contracted model and reasoning effort. Do not silently inherit a route; report any runtime fallback with its reason and confidence impact.
 - Use only task-local context; request a specific missing fact instead of the parent conversation.
 - Do not expand scope or mutate unowned state. You may use ordinary non-orchestration specialist skills needed to complete the contract.
-- Implement only what the current acceptance criteria and profile risk floor require; backlog speculative completeness unless it materially affects scope, cost, or acceptance. Do not add unrequested abstractions, files, dependencies, configuration, compatibility layers, or tests without a present need.
+- Implement only what the current acceptance criteria and profile risk floor require; backlog speculative completeness unless it materially affects scope, cost, or acceptance. Uncertainty alone is not a present need: additions require a current acceptance criterion, observed failure, profile risk floor or trust boundary, or conclusion/replayability need. Do not add unrequested abstractions, files, dependencies, configuration, compatibility layers, or tests without one.
 - Preserve existing user changes and avoid unrelated edits.
 - Produce artifacts directly when assigned ownership.
 - Immediately before returning, confirm each declared artifact exists and is readable and report its absolute path, type, size, and digest when applicable. Do not claim a missing or mismatched artifact is complete.
@@ -129,6 +134,7 @@ Keep raw transcripts, logs, and large evidence collections outside the return un
 ### Verifier
 
 - Inspect the artifact independently against the supplied criteria and raw evidence. First identify the authoritative source of rules and evidence; challenge self-authenticating or co-mutable candidate/proof loops when relevant.
+- Begin only with a complete candidate, verified handoff/identity, author evidence for the current decision threshold and risk floor, and no unresolved ordinary author-debugging issue. A partial candidate is never Gate-ready.
 - Confirm that the candidate did not minimize away explicit requirements, trust-boundary validation, security, data-loss prevention, accessibility basics, physical calibration where relevant, conclusion validity, replayability, authority, or side-effect safety. Treat each required check as evidence for a concrete failure mode; do not add a duplicate Gate for ceremony.
 - Report findings ordered by severity, passed checks, residual risk, and an explicit accept or reject verdict.
 - Do not edit, repair, or reimplement the artifact. Send failures to the controller.
