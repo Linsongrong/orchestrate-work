@@ -35,7 +35,7 @@ flowchart TD
 - `formal`：在原型风险底线之上，增加相称的独立验证、阶段回归和最终集成验收。
 - `release`：再增加可复现环境、外部依赖和发布准备检查。
 
-只有用户明确要求快速原型时才使用 `prototype`；已经开始的 phase 不会被主控擅自降级。
+按用户要得到的结果选择 profile。用户明确指定 `prototype`、`formal` 或 `release` 时，该指定优先。否则，只有明确是探索性结果时才使用 `prototype`：可行性判断、概念验证（POC）、spike 或可丢弃的最小实验。耐用、可合并、完整、生产使用或其他交付导向的结果使用 `formal`；非简单任务意图不明确时也使用 `formal`。仅有“快速”、“MVP”或“试试”并不会把耐用实现降为 `prototype`。`release` 只用于用户明确要求的发布或就绪性保证。已经开始的 phase 不会被主控擅自降级。
 
 ### Prototype 行为
 
@@ -74,10 +74,10 @@ git clone https://github.com/Linsongrong/orchestrate-work.git ~/.codex/skills/or
 ### 使用
 
 ```text
-Use $orchestrate-work in prototype mode to test this product hypothesis through the minimum viable experiment.
+Use $orchestrate-work to run a disposable experiment and decide whether this SDK is feasible.
 ```
 
-核心规则在 `SKILL.md`；模型路由、profile、Gate、恢复和所有权规则在 `references/routing-policy.md`；紧凑的子代理合同在 `references/task-contract.md`。
+核心规则在 `SKILL.md`；模型路由、profile、Gate、恢复和所有权规则在 `references/routing-policy.md`；跨 compaction 的主控恢复在 `references/checkpoint-protocol.md`；紧凑的子代理合同在 `references/task-contract.md`。
 
 ## English
 
@@ -93,7 +93,7 @@ Every child contract directly carries a fixed preamble declaring worker mode, ze
 - `formal`: add proportional independent verification, a phase regression, and final integrated verification.
 - `release`: add reproducible environment, external dependency, and release-readiness checks.
 
-Use `prototype` only when the user explicitly requests rapid prototyping. The controller cannot silently downgrade an active phase.
+Select the profile from the outcome the user requests. An explicit selection of `prototype`, `formal`, or `release` always wins. Otherwise, use `prototype` only for an explicitly exploratory outcome: a feasibility decision, proof of concept, spike, or disposable minimum experiment. Use `formal` for a durable, mergeable, complete, production-use, or other delivery-oriented result, and for ambiguous nontrivial intent. Words such as "quick", "MVP", or "try" alone do not lower a durable implementation to `prototype`. Use `release` only for explicitly requested release or readiness assurance. The controller cannot silently downgrade an active phase.
 
 ### Prototype Behavior
 
@@ -124,7 +124,7 @@ git clone https://github.com/Linsongrong/orchestrate-work.git ~/.codex/skills/or
 ### Usage
 
 ```text
-Use $orchestrate-work in prototype mode to test this product hypothesis through the minimum viable experiment.
+Use $orchestrate-work to run a disposable experiment and decide whether this SDK is feasible.
 ```
 
-Core behavior lives in `SKILL.md`; model routing, profiles, Gates, recovery, and ownership live in `references/routing-policy.md`; compact worker contracts live in `references/task-contract.md`.
+Core behavior lives in `SKILL.md`; model routing, profiles, Gates, recovery, and ownership live in `references/routing-policy.md`; controller recovery across compaction lives in `references/checkpoint-protocol.md`; compact worker contracts live in `references/task-contract.md`.
