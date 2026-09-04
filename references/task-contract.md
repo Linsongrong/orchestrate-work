@@ -1,149 +1,55 @@
 # Task Contract
 
-Give every child agent one bounded contract. Keep it task-local and omit conditional fields that do not apply. Do not turn the template into a checklist that expands the worker's scope. Prefer one short clause per field and reference ledger keys or artifact paths instead of restating their contents.
-
-Start every child dispatch message with this exact preamble. Copy it into the message itself; never replace it with a ledger reference or assume the child inherits it:
+Give each direct child one bounded, task-local contract. The controller records the following unified dispatch record in its ledger, then sends the worker portion with the exact preamble. It replaces separate preflight and contract templates. Omit conditional fields that do not apply; write `none` for absent authority or budget.
 
 ```text
 Execution mode: worker
 Remaining delegation depth: 0
 Agent spawning or task creation: prohibited
 orchestrate-work invocation: prohibited
-```
 
-## Core Contract
-
-The four-line preamble and compact routing preflight are always required. Every dispatch also states role/profile, explicit route, objective, ownership, deliverable, acceptance, targeted check ownership, authority, completion, and escalation. Keep prototype and ordinary local low-risk contracts proportional; add fuller state only for a named acceptance, trust-boundary, authority, evidence-reuse, mutable-state, or cross-owner coordination need. Treat both `spawn_agent` and `followup_task` as dispatches; missing routing-core fields block dispatch. Write `none` when no authority or budget applies.
-
-Before the dispatch message, record this fixed preflight in the controller ledger:
-
-```text
 Role and task shape:
+Phase and assurance profile:
 Current and recommended model/effort: current | none for new agent; recommended
 Concrete lower-route insufficiency: lower model and lower effort when above baseline | n/a
 Reuse, mandatory-downgrade, and cache decision:
-Ownership and completion gate:
-Actual side-effect authority and budget:
-```
-
-`Recommended model/effort` is the lowest sufficient complete route for the current task shape. Write `n/a` for lower-model insufficiency when the selected model is Luna and for lower-effort insufficiency when the selected effort is `medium`; otherwise state the concrete insufficiency. Never use only "complex", "important", or "high-risk". For fresh creation, use the name `<role>_<work>_<model>_<effort>` with valid lowercase underscore tokens, such as `executor_api_terra_medium`. This is only an observability hint for the requested creation route, not actual-route evidence; followup reuse keeps the existing name. Model and effort are sticky after creation; `followup_task` cannot reroute a reused agent. Reevaluate task shape before followup. Reuse only when the current route exactly matches the recommendation and related work is worth batching; a mismatch requires a fresh lower or otherwise suitable agent. Same-executor continuity never overrides a mandatory downgrade, including retaining Sol for Terra/Luna-shaped work. The cache decision may preserve a genuinely same-task, same-route agent, but must not assume cross-agent or cross-model cache hits or bypass a distinct verifier. If the recommended route is unavailable, select and record an explicit fallback on that fresh agent. For a new agent, record only the requested route until creation confirms an actual route; after either dispatch, record requested and actual route where known and any fallback.
-
-```text
-Execution mode: worker
-Remaining delegation depth: 0
-Agent spawning or task creation: prohibited
-orchestrate-work invocation: prohibited
-Role: scout | executor | integrator | verifier
-Phase and assurance profile: prototype | formal | release
-Model, reasoning effort, and brief routing rationale: lowest sufficient route and concrete lower-route insufficiency when applicable
 Objective:
-Relevant context or ledger reference:
+Relevant context:
 Owned scope:
 Out of scope:
 Deliverable:
 Acceptance criteria:
 Required evidence and check ownership:
-Authority and side-effect budget: write `none` when no budgeted action is allowed or needed
+Actual side-effect authority and budget:
 Completion gate:
 Escalate when:
+
+Conditional: prototype hypothesis/minimum experiment/decision threshold/backlog/Gate-repair budget; dependencies or inputs; execution environment/worktree; runtime fallback; shared-worktree map; functional base and excluded historical artifacts; checks already satisfied; final verification assignment; soft timeout/progress signal; mutable remote-state receipt, freshness bound, and reread trigger.
 ```
 
-## Conditional Fields
+The preamble is exact and always copied into the dispatch message; do not replace it with inherited context or a ledger link. The routing fields block dispatch when absent. The recommended route is selected under [routing-policy.md](routing-policy.md); when above baseline, give concrete lower-model and lower-effort gaps. For a new agent, record actual route after creation when known. A delta followup is allowed only under the exact-route reuse rule in that policy; repeat the preamble and state objective delta, findings, completion gate, current/recommended route, reuse decision, and applicable functional base plus current or superseded identity/digest. Otherwise use a full record or fresh agent.
 
-Add only when applicable:
+For a prototype executor, keep the tightly coupled experiment and author checks in one candidate. Contract one decision verifier only after it is complete. Do not create verifier contracts for intermediate artifacts.
 
-```text
-Prototype experiment: hypothesis, minimum experiment, decision threshold, nonblocking backlog, Gate/repair budget; for an executor, keep all tightly coupled design, adapters, mocks, implementation, and targeted author checks in one candidate
-Dependencies and inputs: when they are not obvious from relevant context
-Execution environment or worktree: when location affects execution or evidence
-Runtime fallback: when the requested route is unavailable at dispatch
-Shared-worktree ownership map or reference: for concurrent writers
-Functional base and excluded historical artifacts: for repair or re-verification
-Checks already satisfied and must not be rerun: when reusing evidence
-Final verification assignment: for a final verifier or a prototype verifier owning both the focused Gate and final check
-Soft timeout and progress signal: for work requiring active monitoring
-Mutable remote-state receipt: observed state/time, identity or revision when available, freshness bound, and reread trigger; only for state that may change before dependent mutation or acceptance
-```
-
-For a prototype executor, put all tightly coupled design, adapters, mocks, implementation, and targeted author checks needed by the minimum experiment into one contract. Reference the ledger experiment instead of copying its full hypothesis and backlog into the contract. Do not create verifier contracts for intermediate artifacts. Contract one decision verifier after that candidate is complete.
-
-Use a compact delta followup only when the same role, functional workstream/candidate lineage, ownership, authority, budget, and exact recommended route remain. It must repeat the non-delegation preamble and state the objective delta, new findings, completion gate, current task shape, recommended route, and reuse decision; state functional base and current or superseded identity/digest when evidence reuse, verification, or cross-owner/concurrent/mutable-state risk applies. Record the resulting identity/digest before reusing evidence or dispatching verification, so evidence for the superseded digest cannot transfer. Any material change requires a full contract, and a route mismatch requires a fresh suitable agent.
-
-Use this compact return. Ordinary local low-risk work may omit fields marked conditional:
+## Return
 
 ```text
 Status: complete | partial | blocked
 Result or artifact locations:
-Artifact handoff receipt (conditional): absolute path, type, size, readability, stable identity/digest; required before evidence reuse or independent verification and for cross-owner/concurrent/mutable-state risk
-Evidence and checks: targeted author checks; include candidate, command, environment, result, and owner when evidence may be reused or independently verified
+Artifact handoff receipt (conditional): absolute path, type, size, readability, stable identity/digest
+Evidence and checks: targeted checks; candidate, command, environment, result, and owner when reusable or independently verified
 Requested and actual model/effort, including fallback if used:
 Material decisions or findings:
 Unresolved risks:
 Controller action needed:
 ```
 
-Keep raw transcripts, logs, and large evidence collections outside the return unless the controller needs them to resolve a failure or conflict.
+Use `complete` only when the completion gate is met. Use `partial` only for a controller-requested checkpoint or a reusable subset blocked by external dependency/state, authority/budget, or genuine decomposition/user decision; state completed work, remaining work, ownership, and next action. Use `blocked` only when no safe in-scope progress remains without external change or user authority. Routine recoverable command, tool-path, JSON/reference, restart/socket/readiness, and healthy observation-timeout faults remain worker responsibility and do not justify partial. Keep bulky logs outside the return unless needed to resolve failure or conflict.
 
-Use `complete` only when the assigned completion gate is met. Use `partial` only for a controller-requested checkpoint, or a reusable subset that cannot progress because of external dependency/state, authority or budget, or a genuine decomposition or user decision; state the completed reusable result, remaining work, reason, whether ownership is retained or released, and next owner/action. Use `blocked` only when no safe in-scope progress remains without external change or user authority. Routine recoverable command, tool-path, JSON/reference, transient restart/socket/readiness, and healthy observation-timeout faults remain executor responsibility within side-effect, retry, and convergence limits; they do not justify `partial`. Stop retrying on exhausted budget, no new evidence, or nonconvergence under the existing recovery rules.
+## Role Boundaries
 
-## Common Rules
-
-- Treat the contract as authoritative and solve only its objective.
-- Do not spawn an agent, create or fork a task, ask another agent to continue the work, or invoke `orchestrate-work`. If the objective needs decomposition, stop and return the specific decomposition need to the controller.
-- Use the explicitly contracted model and reasoning effort. Do not silently inherit a route; report any runtime fallback with its reason and confidence impact.
-- Use only task-local context; request a specific missing fact instead of the parent conversation.
-- Do not expand scope or mutate unowned state. You may use ordinary non-orchestration specialist skills needed to complete the contract.
-- Implement only what the current acceptance criteria and profile risk floor require; backlog speculative completeness unless it materially affects scope, cost, or acceptance. Uncertainty alone is not a present need: additions require a current acceptance criterion, observed failure, profile risk floor or trust boundary, or conclusion/replayability need. Do not add unrequested abstractions, files, dependencies, configuration, compatibility layers, or tests without one.
-- Preserve existing user changes and avoid unrelated edits.
-- Produce artifacts directly when assigned ownership.
-- Immediately before returning, confirm each declared artifact exists and is readable. Report an expanded handoff receipt and stable identity/digest only before evidence reuse or independent verification and for cross-owner, concurrent, or mutable-state risk. Do not claim a missing or mismatched artifact is complete, and never transfer evidence from a superseded identity.
-- Before a budgeted side effect, report the intended consumption and verify remaining budget. A validation or command failure before the external action begins consumes no count; an attempted external action with unknown outcome consumes one conservatively until reconciled. Exhaustion blocks only that named side effect and its retries; continue otherwise-ready work that consumes none of it, but stop and escalate immediately before consuming it without renewed authorization.
-- Stop at the completion gate, not at an arbitrary elapsed-time cutoff.
-- At a soft timeout, return compact progress when asked and continue if progress is healthy.
-- Report failed checks, uncertainty, scope pressure, and blockers without hiding them behind `complete`.
-
-## Role Rules
-
-### Scout
-
-- Gather only evidence needed for the stated decision or execution branch.
-- Return findings, sources, confidence, and unresolved questions; do not implement unless given a new executor contract.
-
-### Executor
-
-- Implement within exclusive ownership and run the targeted author checks assigned in the contract.
-- Understand the relevant caller and execution flow first. Reuse repository code, then the standard library, native platform, or installed dependencies before writing minimum new code. For a bug, prefer one shared root-cause repair over symptom patches when the flow supports it.
-- Repair own work when the controller returns independent verification findings.
-- Treat a submitted candidate as frozen while independent verification runs. For a repair, use the stated functional base and do not absorb historical verifier artifacts into the candidate.
-- Do not issue the acceptance verdict for own artifacts.
-
-### Integrator
-
-- Combine accepted inputs, own overlap and integration adjustments, and run assigned cross-component checks.
-- Treat generated integration artifacts as own work requiring a separate verifier.
-- Modify only assigned integration paths; do not alter a frozen candidate or a verifier verdict.
-
-### Verifier
-
-- Inspect the artifact independently against the supplied criteria and raw evidence. First identify the authoritative source of rules and evidence; challenge self-authenticating or co-mutable candidate/proof loops when relevant.
-- Begin only with a complete candidate, verified handoff/identity, author evidence for the current decision threshold and risk floor, and no unresolved ordinary author-debugging issue. A partial candidate is never Gate-ready.
-- Confirm that the candidate did not minimize away explicit requirements, trust-boundary validation, security, data-loss prevention, accessibility basics, physical calibration where relevant, conclusion validity, replayability, authority, or side-effect safety. Treat each required check as evidence for a concrete failure mode; do not add a duplicate Gate for ceremony.
-- Report findings ordered by severity, passed checks, residual risk, and an explicit accept or reject verdict.
-- Do not edit, repair, or reimplement the artifact. Send failures to the controller.
-- Treat the verdict as an immutable verification artifact. Status-only and explicitly non-normative documentation artifacts may be out of scope when the contract says so; rules, prompts, schemas, policies, and other behavior-defining text require appropriate verification.
-
-## Verification Contract
-
-For a verifier, make the general contract concrete with:
-
-```text
-Objective: Determine whether the supplied artifacts satisfy every acceptance criterion.
-Artifacts and evidence:
-Acceptance criteria:
-Checks to run:
-Checks already satisfied and must not be rerun: omit when none
-Independent reproduction required: yes | no; reason
-Final integrated verification: yes | no; identify the integrated candidate when yes
-Out of scope: Modifying, repairing, or reimplementing the artifacts.
-Completion gate: Clear accept/reject verdict with findings, passed checks, and residual risk.
-```
+- **All workers:** solve only the contract; do not delegate, create/fork a task, invoke this skill, silently inherit a route, mutate unowned state, or expand scope. Preserve user changes. Stop at the completion gate and report failures, uncertainty, scope pressure, and blockers plainly.
+- **Scout:** gather only needed decision evidence; return sources, confidence, and unresolved questions, without implementation.
+- **Executor:** implement within ownership, run assigned author checks, repair returned findings, and freeze its candidate during verification. Prefer repository implementation, then standard/native facilities, then existing dependencies before minimum new code. Do not add speculative abstractions, files, dependencies, configuration, compatibility layers, or tests without a present acceptance or risk need. Prefer one shared root-cause repair over symptom patches when the flow supports it. It cannot accept its own artifact.
+- **Integrator:** combine accepted inputs only within assigned paths and run assigned cross-component checks. Its output is separately verified.
+- **Verifier:** independently inspect a complete candidate against authoritative criteria and raw evidence; identify the authoritative source of rules and evidence and challenge self-authenticating or co-mutable candidate/proof loops when relevant. Do not edit or repair. Check explicit requirements and applicable trust, authority, side-effect, conclusion, replayability, accessibility, safety, security, and data-loss concerns. Report severity-ordered findings, passed checks, residual risk, and immutable accept/reject verdict. Status-only/non-normative documentation may be excluded only when the contract says so.

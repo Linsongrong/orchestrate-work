@@ -1,23 +1,9 @@
 # Checkpoint Protocol
 
-Use this protocol in orchestration mode for every assurance profile. It preserves the controller's recovery position across compaction without replacing the task ledger. Direct mode does not create a checkpoint by default, and a worker never owns, writes, or restores one.
+Use a checkpoint only when work is expected to span multiple waves, compaction or resume, or long-lived remote coordination. Single-wave orchestration skips it. A worker never owns, writes, or restores one.
 
-## Controller Checkpoint
+Keep one compact controller-owned checkpoint in task or plan state when available. Update it at phase start, material dispatch or decision, blocker, and phase completion. Keep only goal and completion criteria; phase and next action; active workstreams with owner/status; blockers; important decisions; latest verified evidence; and, only when chronology matters, a short append-only milestone timeline.
 
-Keep one compact controller-owned checkpoint in task or plan state when available. Update it at phase start, before or after a material dispatch or decision, on a blocker, and at phase completion. Keep only:
+Do not copy transcripts, raw worker returns, logs, or the dispatch ledger. Link authoritative artifacts and evidence instead. The checkpoint is not evidence and never duplicates routing, ownership, authority, budget, or evidence-reuse decisions.
 
-- goal and completion criteria;
-- current phase and next action;
-- active workstreams with owner and status;
-- blockers;
-- important decisions;
-- latest verified evidence; and
-- a short append-only timeline of material milestones when chronology is needed.
-
-Do not copy the transcript, raw worker returns, logs, or the routing ledger into the checkpoint. Link or name authoritative artifacts and evidence instead. Keep detailed routing, ownership, authority, budget, and evidence-reuse decisions in the ledger under their existing rules.
-
-## Restore After Compaction
-
-Before resuming controller action, read the checkpoint and reconcile it with the latest user direction and authoritative state: Git or equivalent source control, current test results, and produced artifacts. Treat the checkpoint as a recovery aid, not evidence. Discard or correct stale claims, reject results that no longer match the objective or candidate identity, then update the checkpoint and ledger before dispatching, accepting, or reusing evidence.
-
-When no checkpoint is available, reconstruct only the minimum necessary control state from user direction and authoritative artifacts, tests, and ledger state; do not infer missing verification or completion from a prior narrative.
+After actual compaction or resume, reconcile checkpoint claims with current user direction and authoritative Git (or equivalent), tests, and produced artifacts before dispatching, accepting, or reusing evidence. Discard or correct stale claims and results that no longer match the objective or candidate identity, then update the checkpoint and ledger. When no checkpoint exists, reconstruct only the minimum control state from user direction and authoritative artifacts, tests, and ledger; never infer verification or completion from a narrative.
