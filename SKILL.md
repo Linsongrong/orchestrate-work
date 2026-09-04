@@ -5,14 +5,14 @@ description: Coordinate non-trivial or long-running work through a controller-fi
 
 # Orchestrate Work
 
-If operating under another controller's contract, enter **worker mode**: do not invoke this skill, create agents or tasks, or replan the objective. Complete the assigned specialist role or return a concrete escalation.
+If operating under another controller's contract, enter **worker mode**: do not invoke this skill, spawn agents, or create/fork Codex tasks or threads, and do not replan the objective. Domain or business Task objects explicitly required by the objective and assigned side-effect authority remain allowed. Complete the assigned specialist role or return a concrete escalation.
 
 Choose one mode:
 
 - **Direct:** only a genuinely trivial, local task with no meaningful decomposition or repeated search, implementation, or debugging. Explicit invocation strongly presumes orchestration.
 - **Orchestration:** the controller manages and judges; it delegates substantive discovery, implementation, integration, and verification and does not own a main execution branch. It may complete a direct unit only when mechanical, local, low-risk, and requiring no independent judgment (for example, existence, digest, non-normative status, or harmless local state updates); behavior, candidate identity, side-effect authority/budget or externally consequential effects, prompt, schema, and policy changes are never direct units.
 
-In orchestration mode, read [routing-policy.md](references/routing-policy.md) and [task-contract.md](references/task-contract.md) before the first plan or dispatch; reread them only after context loss or a policy change. Read [checkpoint-protocol.md](references/checkpoint-protocol.md) only when its conditional trigger applies.
+In orchestration mode, read [routing-policy.md](references/routing-policy.md) and [task-contract.md](references/task-contract.md) before the first plan or dispatch; reread them only after context loss or a policy change. Read [checkpoint-protocol.md](references/checkpoint-protocol.md) only for multiple waves, compaction/resume, or long-lived remote coordination.
 
 ## Prototype Fast Path
 
@@ -34,6 +34,6 @@ Controller work is orientation, decomposition, dispatch, ledger/control state, c
 
 ## Stop And Recover
 
-Continue until all acceptance criteria pass. Before delivery, confirm necessary agents have settled, stale results were not integrated, conflicting evidence is resolved or remains unaccepted, and unresolved risk is recorded accurately. Do not call ordinary recoverable errors partial. On actual compaction, reconcile current user direction with authoritative Git, tests, and artifacts before acting; the checkpoint is recovery aid, never evidence. Send synthesized, adaptive progress updates for long-running work and on material decisions, verification, blockers requiring the user, and completion.
+Continue until acceptance criteria pass or the recovery policy requires stopping for a genuine blocker, authority/budget boundary, no-new-evidence/nonconvergence, or required user decision. Before delivery, confirm necessary agents have settled, stale results were not integrated, conflicting evidence is resolved or remains unaccepted, and unresolved risk is recorded accurately. Ordinary recoverable faults remain worker-owned and do not justify partial. On actual compaction, reconcile current user direction with authoritative Git, tests, and artifacts before acting; the checkpoint is recovery aid, never evidence. Send synthesized, adaptive progress updates for long-running work and on material decisions, verification, blockers requiring the user, and completion.
 
 Use [routing-policy.md](references/routing-policy.md) for the authoritative rules on profiles, routes, budgets, ownership, evidence, recovery, and advancement. Use [task-contract.md](references/task-contract.md) for the mandatory worker preamble, dispatch record, role boundaries, and return. Use [checkpoint-protocol.md](references/checkpoint-protocol.md) for conditional checkpointing.
