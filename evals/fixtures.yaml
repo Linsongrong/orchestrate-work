@@ -28,6 +28,7 @@ fixtures:
         frozen: true
     ledger:
       objective: Correctly preserve the enabled flag.
+      execution_ownership: controller-only supervision; executor_e1 retains repair ownership
       candidate: candidate_c1
       latest_gate: {id: gate_g1, verdict: reject, finding: enabled flag is reversed}
       next_action: repair finding through candidate owner
@@ -499,7 +500,58 @@ fixtures:
     workspace:
       status_note: {path: work/status.txt, writer: executor_e1, content: current, type: file, size: 7, digest: S1, readable: true, frozen: false}
     reported_handoff: {artifact: status_note, path: work/status.txt, size: 7, digest: S1}
+    ledger: {execution_ownership: controller-only supervision; executor_e1 owns behavior changes}
     tasks:
       - {id: digest_check, semantic: false, artifact: status_note, expected_digest: S1}
       - {id: status_update, semantic: false, artifact: status_note}
       - {id: prompt_change, semantic: true, changes_behavior: true}
+
+  fx_primary_owned_mainline:
+    subject: {actor_id: controller, role: controller, entrypoint: event_response}
+    actors: {controller: {role: controller, owns: [candidate_c1]}, verifier_v1: {role: verifier}}
+    tools: [candidate_write, dispatch_agent, accept_candidate]
+    workspace:
+      candidate_c1: {path: work/candidate.txt, writer: controller, content: in-progress, digest: P1, frozen: false}
+    ledger:
+      profile: prototype
+      objective: Finish the same local experiment after diagnosing the incorrect flag.
+      execution_ownership: primary-owned; no other writer or independent execution branch
+      work_segment: {owner: controller, completion_boundary: working experiment and targeted author checks, remaining_work: local flag repair and author checks}
+      route: {actual: gpt-6-astra/medium, recommended: gpt-6-astra/medium, reason: diagnosis and repair depend on retained experimental context}
+      compute_budget: {scope: this experiment through author checks, remaining: sufficient}
+      authority: local reversible candidate edits only
+      independent_verification: required after the candidate and author checks are complete
+      latest_gate: null
+
+  fx_primary_author_ready:
+    subject: {actor_id: controller, role: controller, entrypoint: event_response}
+    actors: {controller: {role: controller, owns: [candidate_c1]}, verifier_v1: {role: verifier}}
+    tools: [dispatch_agent, accept_candidate, verdict_write, verdict_mutation]
+    workspace:
+      candidate_c1: {path: work/candidate.bin, writer: controller, content: ready, type: file, size: 5, digest: P2, readable: true, frozen: true}
+    verification_contract: {actor: verifier_v1, role: verifier, owned_targets: [candidate_c1]}
+    ledger:
+      profile: formal
+      execution_ownership: primary-owned
+      candidate: {id: candidate_c1, digest: P2}
+      author_checks: {owner: controller, candidate: candidate_c1, digest: P2, result: pass, command: targeted_test, environment: local}
+      handoff: {candidate: candidate_c1, digest: P2, confirmed: true}
+      latest_gate: null
+
+  fx_primary_independent_accept:
+    subject: {actor_id: controller, role: controller, entrypoint: event_response}
+    actors: {controller: {role: controller, owns: [candidate_c1]}, verifier_v1: {role: verifier}}
+    tools: [accept_candidate, dispatch_agent, candidate_write, verdict_mutation]
+    workspace:
+      candidate_c1: {path: work/candidate.bin, writer: controller, content: ready, digest: P2, frozen: true}
+    verdicts:
+      gate_g1: {owner: verifier_v1, candidate: candidate_c1, digest: P2, result: accept, immutable: true, final_integrated_verification: true}
+    evidence: {candidate: candidate_c1, digest: P2, owner: verifier_v1, command: independent_test, environment: local, result: pass, trusted: true}
+    ledger:
+      profile: formal
+      execution_ownership: primary-owned
+      candidate: {id: candidate_c1, digest: P2}
+      acceptance_criteria: pass
+      checks: pass
+      unresolved_risks: []
+      latest_gate: {id: gate_g1, owner: verifier_v1, candidate: candidate_c1, digest: P2, result: accept, immutable: true, final_integrated_verification: true}

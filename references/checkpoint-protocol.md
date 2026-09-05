@@ -1,6 +1,6 @@
 # Checkpoint Protocol
 
-Use a checkpoint only when work is expected to span multiple waves, compaction or resume, or long-lived remote coordination. Single-wave orchestration skips it. A worker never owns, writes, or restores one.
+Use a checkpoint only when work is expected to span multiple waves, compaction or resume, or long-lived remote coordination, whether the main line is primary-owned or delegated. Skip it when none of these triggers applies. A delegated worker never owns, writes, or restores one; the primary retains it even when also implementing.
 
 Keep one compact controller-owned checkpoint in task or plan state when available. Update it at phase start, material dispatch or decision, blocker, and phase completion. Keep only goal and completion criteria; phase and next action; active workstreams with owner/status; blockers; important decisions; latest verified evidence; and, only when chronology matters, a short append-only milestone timeline.
 

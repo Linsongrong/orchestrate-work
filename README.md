@@ -5,10 +5,10 @@
 ```mermaid
 flowchart TD
     U["用户目标 / User objective"] --> M{"模式 / Mode"}
-    M -->|"真正简单且局部 / Truly trivial and local"| D["主控直接完成 / Direct mode"]
-    M -->|"非简单或长程 / Non-trivial or long-running"| P{"Assurance profile"}
+    M -->|"无需委派或独立验收 / No delegation or independent Gate needed"| D["主代理直接完成 / Direct mode"]
+    M -->|"需要分工或独立验收 / Delegation or independent Gate needed"| P{"Assurance profile"}
     P -->|"prototype"| H["产品假设与最小实验 / Hypothesis and minimum experiment"]
-    H --> C["单一实验候选 / Experiment candidate"]
+    H --> C["主代理或一个 Executor 持有候选 / One primary or executor owner"]
     C --> G["聚焦的独立决策 Gate / Focused independent decision Gate"]
     G -->|"Accept"| F["路线结论与 backlog / Route decision and backlog"]
     G -->|"First reject"| R["一次默认窄修与复验 / One default narrow repair and re-Gate"]
@@ -23,11 +23,19 @@ flowchart TD
 
 ## 中文
 
-`orchestrate-work` 用主控、边界明确的专业代理、持久任务状态和独立验收来协调非简单或长程工作。主控负责意图、拆解、决策、冲突处理和最终交付，不承担需要多轮探索、实现或调试的主要执行分支。
+`orchestrate-work` 保持用户目标、主线所有权和独立验收的一致性。紧耦合的调查、实现和作者自检可以由主代理连续完成；有并行、上下文隔离或成批降档价值的工作再委派。重大协调、冲突判断或监督与执行争夺注意力时，保留不参与实现的主控。
 
-显式调用 `$orchestrate-work` 时，除非任务确实简单且局部，否则进入编排模式。编排中的机械、局部、低风险小事可以作为 `direct unit` 由主控直接处理，不为状态更新、文件存在性或 digest 核对单开代理和 Gate。
+显式调用 `$orchestrate-work` 不意味着必须凑齐几个代理。是否分工与需要什么验收证据分别判断，任务长、文件多、需要多轮调试本身不要求交接。普通低影响任务直接处理；重要结果及明确指定的 profile 保留独立验收。用户禁止委派时继续已授权工作和相称自检，明确未完成的独立保证，不能把自检称为独立 Gate。
 
-每份子代理合同都必须直接携带 `worker`、剩余派工深度为 `0`、禁止创建代理或任务、禁止再次调用 `orchestrate-work` 四项固定声明。子任务需要继续拆分时只能交回主控，不能形成嵌套编排。
+主代理可以实现，但不能给自己的成果签发独立验收结论。只有另一名未参与实现的 Verifier 对当前候选给出不可修改的通过结论后，主控才能据此记录验收；不得覆盖拒绝结论或放宽标准来批准自己的成果。验收期间冻结候选，不接纳旧版本证据。
+
+每份子代理合同都必须直接携带 `worker`、剩余派工深度为 `0`、禁止创建 Codex 代理或任务、禁止再次调用 `orchestrate-work` 四项固定声明。子任务需要继续拆分时交回主控。主代理自己实现时不需要给自己派工；业务系统 Task 仍按目标和副作用权限处理。
+
+### 模型与工作段
+
+路由单位是一段有明确完成边界的连续工作，包含相关调查、实现、自检和窄修。已选择的 Astra 主代理适合持有需要持续判断的主线；大批普通实现优先 Terra，成批确定性核对优先 Luna，Sol 保留用于适合它的高要求判断或可用替代。模型和推理强度一起评估，尊重用户指定及实际工具能力，不自动更改当前会话模型。
+
+主线中的几个机械步骤不触发换人；进入可独立交接的大批普通工作时重新判断降档。Astra/Sol 工作段仍有预算和边界，续用需要具体能力或上下文连续性理由。比较总执行、交接、返工和验收成本，不假设跨模型缓存命中，也不宣称未经实测的节省。完整规则与官方依据见 `references/routing-policy.md`。
 
 ### Assurance Profiles
 
@@ -57,7 +65,7 @@ flowchart TD
 
 ### 可靠交接
 
-写入工件的代理在返回前报告绝对路径、类型、大小、可读性和适用时的 digest。主控在接受结果或派验收代理前立即确认这些信息。文件缺失或不匹配属于交接未完成，不会再创建一个质量 Gate。
+普通本地低风险步骤使用明确工件和针对性作者证据，不默认建立完整回执。独立验收、证据复用、跨所有权或可变状态交接时，按规则核对候选身份和必要回执。文件缺失或不匹配属于交接未完成，不另开质量 Gate。主代理也是作者时，副作用预算、所有权和证据规则同样适用。
 
 长任务由主控发送合成心跳，说明当前目标或假设、最近的决策证据、收敛与副作用预算，以及下一决策或停止条件。
 
@@ -81,11 +89,19 @@ Use $orchestrate-work to run a disposable experiment and decide whether this SDK
 
 ## English
 
-`orchestrate-work` coordinates non-trivial or long-running work through a controller, bounded specialist agents, durable state, and independent verification. The controller owns intent, decomposition, decisions, conflict resolution, and delivery instead of taking a main branch that requires repeated exploration, implementation, or debugging.
+`orchestrate-work` preserves user intent, continuous main-line ownership, and independent verification. The primary agent may own coupled investigation, implementation, and author checks. Delegate for real parallelism, context isolation, or substantial routine batches. Keep a non-executing controller when consequential coordination, conflicting evidence, or oversight competes with execution.
 
-Explicit invocation normally enters orchestration mode. Mechanical, local, low-risk work inside an orchestrated phase may run as a controller `direct unit`, so status updates, artifact existence checks, and digest reconciliation do not create separate agents or Gates.
+Explicit invocation does not impose a minimum agent count. Choose execution ownership separately from assurance; duration, file count, and repeated debugging alone do not require handoffs. Ordinary low-impact work stays direct; important results and explicit profiles retain independent verification. If the user prohibits delegation, continue authorized work and proportional self-checks, disclose missing independent assurance, and do not call self-checks an independent Gate.
 
-Every child contract directly carries a fixed preamble declaring worker mode, zero remaining delegation depth, no agent or task creation, and no `orchestrate-work` invocation. Work that needs further decomposition returns to the controller instead of creating nested orchestration.
+A primary author cannot issue its own independent verdict. It may record acceptance only from an immutable independent accept verdict for the current candidate, without overriding rejection or relaxing criteria to approve its work. Freeze candidates during verification and reject superseded evidence.
+
+Every child contract carries the worker preamble, zero delegation depth, no Codex agent/task creation, and no skill reinvocation. Further decomposition returns to the primary. Primary authors do not self-dispatch; domain Task objects remain governed by the objective and side-effect authority.
+
+### Models And Work Segments
+
+Route a coupled objective through its completion boundary, including related diagnosis, implementation, checks, and narrow repairs. An already-selected Astra primary is a starting preference for context-dependent main lines; Terra handles substantial routine implementation, Luna handles batched deterministic checks, and Sol remains a suitable demanding-judgment or fallback option. Select model and effort together, respecting the user's selection and actual runtime capabilities; the skill does not switch the current primary model.
+
+Adjacent mechanical steps do not trigger handoffs. Reassess for a substantial separable routine batch and prefer a sufficient cheaper route. Astra/Sol segments retain bounded budgets and require concrete capability or continuity reasons for renewal. Compare execution, transfer, repair, and verification costs without assuming cross-model cache hits or unmeasured savings. Full policy and official sources are in `references/routing-policy.md`.
 
 ### Assurance Profiles
 
@@ -107,7 +123,7 @@ For one candidate with no substantive integration, the explicitly contracted foc
 
 ### Reliable Handoffs
 
-Writers return each artifact's absolute path, type, size, readability, and digest when applicable. The controller confirms the receipt before accepting the return or dispatching verification. A missing or mismatched artifact is an incomplete handoff, not another quality Gate.
+Ordinary local low-risk steps use declared artifacts and targeted author evidence without a full receipt by default. Verify candidate identity and necessary receipts for independent verification, evidence reuse, cross-owner, or mutable-state handoffs. A mismatch is an incomplete handoff, not another quality Gate. Primary authors follow the same side-effect, ownership, and evidence rules.
 
 For long-running phases, the controller sends synthesized heartbeats with the objective or hypothesis, latest decision-relevant evidence, convergence and side-effect budget, and the next decision or stop condition.
 
